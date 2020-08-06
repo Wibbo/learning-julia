@@ -1,5 +1,6 @@
 # Create a module to avoid namespace collisions.
 module corona
+export Status
 
 # All living entities are a Creature.
 abstract type Creature end
@@ -13,12 +14,6 @@ mutable struct Position
     y::Int
 end
 
-# Create a struct to define each person's radius of infection.
-struct Infection_Radius
-    width::Int
-    height::Int
-end
-
 # Define the physical bounds of each person.
 struct Creature_Area
     top::Int
@@ -26,8 +21,8 @@ struct Creature_Area
     bottom::Int
     right::Int
 
-    Creature_Area(p::Position, r::Infection_Radius) =
-        new(p.y+r.height, p.x, p.y, p.x+r.width)
+    Creature_Area(p::Position, r::Int) =
+        new(p.y+r, p.x, p.y, p.x+r)
 end
 
 """
@@ -48,7 +43,7 @@ end
 
 # The following funtions apply to all creatures.
 position(c::Creature) = c.position
-radius(c::Creature) = c.infection_radius
+radius(c::Creature) = c.radius
 name(c::Creature) = c.name
 status(c::Creature) = c.status
 
@@ -56,7 +51,7 @@ status(c::Creature) = c.status
 struct Person<:Creature
     name::String
     position::Position
-    radius::Infection_Radius
+    radius::Int
     status::Status
 end
 
