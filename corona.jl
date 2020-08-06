@@ -43,14 +43,16 @@ end
 name(c::Creature) = c.name
 position(c::Creature) = c.position
 radius(c::Creature) = c.radius
-#status(c::Creature) = c.status
+status(c::Creature) = c.status
+probability(c::Creature) = c.probability
 
 # A Person is a subclass of a Creature.
-struct Person<:Creature
+mutable struct Person<:Creature
     name::String
     position::Position
     radius::Int
     status::Status
+    probability:: Int
 end
 
 move_left!(c::Creature, amount::Int)  = c.position.x -= amount
