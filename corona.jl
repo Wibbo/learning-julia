@@ -21,8 +21,7 @@ struct Creature_Area
     bottom::Int
     right::Int
 
-    Creature_Area(p::Position, r::Int) =
-        new(p.y+r, p.x, p.y, p.x+r)
+    Creature_Area(p::Position, r::Int) = new(p.y+r, p.x, p.y, p.x+r)
 end
 
 """
@@ -35,17 +34,16 @@ function distance_violated(P1::Creature_Area, P2::Creature_Area)
 end
 
 function infection_risk(creature1::Creature, creature2::Creature)
-    println("Checking collision of thing vs. thing")
-    creature1_space = Creature_Area(position(creature1), size(creature1))
-    creature2_space = Creature_Area(position(creature2), size(creature2))
-    return distance_violated(rectA, rectB)
+    creature1_space = Creature_Area(position(creature1), radius(creature1))
+    creature2_space = Creature_Area(position(creature2), radius(creature2))
+    return distance_violated(creature1_space, creature2_space)
 end
 
 # The following funtions apply to all creatures.
+name(c::Creature) = c.name
 position(c::Creature) = c.position
 radius(c::Creature) = c.radius
-name(c::Creature) = c.name
-status(c::Creature) = c.status
+#status(c::Creature) = c.status
 
 # A Person is a subclass of a Creature.
 struct Person<:Creature
@@ -55,6 +53,9 @@ struct Person<:Creature
     status::Status
 end
 
-
+move_left!(c::Creature, amount::Int)  = c.position.x -= amount
+move_right!(c::Creature, amount::Int) = c.position.x += amount
+move_up!(c::Creature, amount::Int)    = c.position.y -= amount
+move_down!(c::Creature, amount::Int)  = c.position.y += amount
 
 end # corona module
