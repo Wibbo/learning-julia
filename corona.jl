@@ -66,10 +66,42 @@ mutable struct Person<:Creature
     direction:: Direction
 end
 
-move_left!(c::Creature, amount::Int)  = c.position.x -= amount
-move_right!(c::Creature, amount::Int) = c.position.x += amount
-move_up!(c::Creature, amount::Int)    = c.position.y += amount
-move_down!(c::Creature, amount::Int)  = c.position.y += amount
+function move_left!(c::Creature, amount::Int, g::Grid_Area)
+    c.position.x -= amount
+
+    if c.position.x <= 0
+        c.position.x = 0
+    end
+end
+
+function move_right!(c::Creature, amount::Int, g::Grid_Area)
+    c.position.x += amount
+
+    if c.position.x >= g.x2
+        c.position.x = g.x2
+    end
+end
+
+function move_up!(c::Creature, amount::Int, g::Grid_Area)
+    c.position.y += amount
+
+    if c.position.y >= g.y2
+        c.position.y = g.y2
+    end
+end
+
+function move_down!(c::Creature, amount::Int, g::Grid_Area)
+    c.position.y -= amount
+
+    if c.position.y <= 0
+        c.position.y = 0
+    end
+end
+
+#move_left!(c::Creature, amount::Int)  = c.position.x -= amount
+#move_right!(c::Creature, amount::Int) = c.position.x += amount
+#move_up!(c::Creature, amount::Int)    = c.position.y += amount
+#move_down!(c::Creature, amount::Int)  = c.position.y -= amount
 
 function move_north!(c::Creature, min::Int64, max::Int64, g::Grid_Area)
     dir = Bool(rand(0:1))
@@ -77,8 +109,8 @@ function move_north!(c::Creature, min::Int64, max::Int64, g::Grid_Area)
     max1::Int64 = div(max, 2)
     steps = rand(min:max)
     steps1 = rand(min1:max1)
-    move_up!(c, steps)
-    dir ? move_left!(c, steps1) : move_right!(c, steps1)
+    move_up!(c, steps, g)
+    dir ? move_left!(c, steps1, g) : move_right!(c, steps1, g)
 end
 
 function move_south!(c::Creature, min::Int64, max::Int64, g::Grid_Area)
@@ -87,8 +119,8 @@ function move_south!(c::Creature, min::Int64, max::Int64, g::Grid_Area)
     max1::Int64 = div(max, 2)
     steps = rand(min:max)
     steps1 = rand(min1:max1)
-    move_down!(c, steps)
-    dir ? move_left!(c, steps1) : move_right!(c, steps1)
+    move_down!(c, steps, g)
+    dir ? move_left!(c, steps1, g) : move_right!(c, steps1, g)
 end
 
 function move_east!(c::Creature, min::Int64, max::Int64, g::Grid_Area)
@@ -97,8 +129,8 @@ function move_east!(c::Creature, min::Int64, max::Int64, g::Grid_Area)
     max1::Int64 = div(max, 2)
     steps = rand(min:max)
     steps1 = rand(min1:max1)
-    move_right!(c, steps)
-    dir ? move_up!(c, steps1) : move_down!(c, steps1)
+    move_right!(c, steps, g)
+    dir ? move_up!(c, steps1, g) : move_down!(c, steps1, g)
 end
 
 function move_west!(c::Creature, min::Int64, max::Int64, g::Grid_Area)
@@ -107,8 +139,8 @@ function move_west!(c::Creature, min::Int64, max::Int64, g::Grid_Area)
     max1::Int64 = div(max, 2)
     steps = rand(min:max)
     steps1 = rand(min1:max1)
-    move_left!(c, steps)
-    dir ? move_up!(c, steps1) : move_down!(c, steps1)
+    move_left!(c, steps, g)
+    dir ? move_up!(c, steps1, g) : move_down!(c, steps1, g)
 end
 
 function move_person(c::Creature, min::Int, max::Int, g::Grid_Area)

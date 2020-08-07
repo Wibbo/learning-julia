@@ -130,7 +130,6 @@ for _ in 1:iterations
 
     # Analyse the grid to see which healthy people are too close to infected ones.
     for ip in people
-
         update_people_counts!(ip)
 
         if ip.status == corona.Infected
