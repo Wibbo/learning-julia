@@ -71,6 +71,7 @@ function move_left!(c::Creature, amount::Int, g::Grid_Area)
 
     if c.position.x <= 0
         c.position.x = 0
+        c.direction = East
     end
 end
 
@@ -79,6 +80,7 @@ function move_right!(c::Creature, amount::Int, g::Grid_Area)
 
     if c.position.x >= g.x2
         c.position.x = g.x2
+        c.direction = West
     end
 end
 
@@ -87,6 +89,7 @@ function move_up!(c::Creature, amount::Int, g::Grid_Area)
 
     if c.position.y >= g.y2
         c.position.y = g.y2
+        c.direction = South
     end
 end
 
@@ -95,13 +98,9 @@ function move_down!(c::Creature, amount::Int, g::Grid_Area)
 
     if c.position.y <= 0
         c.position.y = 0
+        c.direction = North
     end
 end
-
-#move_left!(c::Creature, amount::Int)  = c.position.x -= amount
-#move_right!(c::Creature, amount::Int) = c.position.x += amount
-#move_up!(c::Creature, amount::Int)    = c.position.y += amount
-#move_down!(c::Creature, amount::Int)  = c.position.y -= amount
 
 function move_north!(c::Creature, min::Int64, max::Int64, g::Grid_Area)
     dir = Bool(rand(0:1))
@@ -155,7 +154,6 @@ function move_person(c::Creature, min::Int, max::Int, g::Grid_Area)
     else
         throw(InvalidStateException("Invalid direction for movement."))
     end
-
 end
 
 

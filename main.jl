@@ -1,5 +1,7 @@
 include("corona.jl")
 using ConfParser
+using DataFrames
+using CSV
 
 conf = ConfParse("config.ini")
 parse_conf!(conf)
@@ -37,8 +39,6 @@ function get_direction(d::corona.Direction)
     end
 end
 
-
-
 """
 Creates a person.
 name: The person's name.
@@ -61,6 +61,12 @@ end
 # Create the required number of infected people.
 for i in healthy_people + 1:infected_people + healthy_people
     p = create_person("Person $i", area=infected_radius, status=corona.Infected)
+    people[i] = p
+end
+
+# Create the required number of immune people.
+for i in healthy_people + infected_people+ 1:total_people
+    p = create_person("Person $i", area=infected_radius, status=corona.Immune)
     people[i] = p
 end
 
@@ -97,10 +103,10 @@ function infect_person!(c::corona.Creature)
         if corona.infection_risk(c, hp)
             infected = "$(c.name) [$(c.position.x),$(c.position.y)]"
             healthy = "$(hp.name) [$(hp.position.x),$(hp.position.y)]"
-            println(infected * " danger to " * healthy)
+            #println(infected * " danger to " * healthy)
 
             infect = rand(1:100)
-            if infect < c.probability
+            if (infect < c.probability) && (hp.status == corona.Healthy)
                 hp.status = corona.Infected
             end
         end
@@ -122,12 +128,16 @@ function report_status!()
     println("Total immune is $(people_counts[3])")
 end
 
+df = DataFrame(Step = Int[], Name = String[], xpos = Int[], ypos = Int[],
+    status = corona.Status[], radius = Int[], probability = Int[],
+    direction = corona.Direction[], min_step = Int[], max_step = Int[],
+    grid_x = Int[], grid_y = Int[], iterations = Int[])
+
 # This is the main application loop. The outer loop is the number of
 # iterations that are executed. Or, in other words, how many moves
 # each person makes in their digital world.
-for _ in 1:iterations
+for step in 1:iterations
     reset_array(people_counts)
-
     # Analyse the grid to see which healthy people are too close to infected ones.
     for ip in people
         update_people_counts!(ip)
@@ -136,11 +146,27 @@ for _ in 1:iterations
             infect_person!(ip)
         end
 
-        corona.move_person(ip, min_step, max_step, grid)
+        list = [step, ip.name, ip.position.x, ip.position.y, ip.status,
+            ip.radius, ip.probability, ip.direction, min_step,
+            max_step, world_width, world_height, iterations]
+        push!(df, list)
 
-        #corona.move_north!(ip, min_step, max_step, grid)
-        println("$(ip.name) at [$(ip.position.x), $(ip.position.y)] [D:$(ip.direction)]")
+        corona.move_person(ip, min_step, max_step, grid)
     end
 end
 
+CSV.write("./output.csv", df)
 report_status!()
+
+
+
+
+
+
+
+
+
+
+
+#corona.move_north!(ip, min_step, max_step, grid)
+#println("$(ip.name) at [$(ip.position.x), $(ip.position.y)] [D:$(ip.direction)] [S:$(ip.status)]")
