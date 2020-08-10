@@ -3,6 +3,8 @@ using ConfParser
 using DataFrames
 using CSV
 
+
+
 conf = ConfParse("config.ini")
 parse_conf!(conf)
 
@@ -205,9 +207,9 @@ for step in 1:iterations
             # Determine if other people get infected.
             infect_person!(ip, step)
 
-
-
-
+            if step > (ip.infected_step + ip.death_step)
+                ip.status = corona.Dead
+            end
         end
 
         corona.move_person(ip, min_step, max_step, grid)
