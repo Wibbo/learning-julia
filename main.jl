@@ -46,7 +46,16 @@ area: A square area around a person that defines when it is possible for them to
 status: The person's status which can be Healthy, Infected or Immune.
 """
 function create_person(name::String; area::Int=10, status::corona.Status=corona.Healthy, prob=20)
-    pos = corona.Position(rand(0:world_width), rand(0:world_height))
+
+    radius::Int = 0
+
+    if status == corona.Healthy
+        radius = healthy_radius
+    else
+        radius = infected_radius
+    end
+
+    pos = corona.Position(rand(0:world_width), rand(0:world_height), radius)
     dir = rand(0:3)
     dir2::corona.Direction = corona.Direction(dir)
     return corona.Person(name, pos, area, status, prob, dir2)
@@ -152,16 +161,3 @@ end
 
 CSV.write("./output.csv", df)
 report_status!()
-
-
-
-
-
-
-
-
-
-
-
-#corona.move_north!(ip, min_step, max_step, grid)
-#println("$(ip.name) at [$(ip.position.x), $(ip.position.y)] [D:$(ip.direction)] [S:$(ip.status)]")
