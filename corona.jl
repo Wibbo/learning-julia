@@ -7,7 +7,7 @@ export Direction
 abstract type Creature end
 
 # Define the possible statuses for a person.
-@enum Status Healthy Infected Immune
+@enum Status Healthy=1 Infected=2 Immune=3 Dead=4
 @enum Direction North East South West
 
 # Create a struct to hold a person's position.
@@ -55,19 +55,23 @@ end
 # The following funtions apply to all creatures.
 name(c::Creature) = c.name
 position(c::Creature) = c.position
-radius(c::Creature) = c.radius
 status(c::Creature) = c.status
-probability(c::Creature) = c.probability
+infection_chance(c::Creature) = c.infection_chance
 direction(c::Creature) = c.direction
+chance_of_death(c::Creature) = c.chance_of_death
+death_step(c::Creature) = c.death_step
+infected_step(c::Creature) = c.infected_step
 
 # A Person is a subclass of a Creature.
 mutable struct Person<:Creature
     name::String
     position::Position
-    radius::Int
     status::Status
-    probability:: Int
+    infection_chance:: Int
     direction:: Direction
+    chance_of_death::Int
+    death_step::Int
+    infected_step::Int
 end
 
 function move_left!(c::Creature, amount::Int, g::Grid_Area)
