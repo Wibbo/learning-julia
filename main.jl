@@ -128,10 +128,7 @@ function report_status!()
     println("Total immune is $(people_counts[3])")
 end
 
-df = DataFrame(Step = Int[], Name = String[], xpos = Int[], ypos = Int[],
-    status = corona.Status[], radius = Int[], probability = Int[],
-    direction = corona.Direction[], min_step = Int[], max_step = Int[],
-    grid_x = Int[], grid_y = Int[], iterations = Int[])
+df = DataFrame(Step = Int[], Healthy = Int[], Infected = Int[], Immune = Int[])
 
 # This is the main application loop. The outer loop is the number of
 # iterations that are executed. Or, in other words, how many moves
@@ -146,13 +143,11 @@ for step in 1:iterations
             infect_person!(ip)
         end
 
-        list = [step, ip.name, ip.position.x, ip.position.y, ip.status,
-            ip.radius, ip.probability, ip.direction, min_step,
-            max_step, world_width, world_height, iterations]
-        push!(df, list)
-
         corona.move_person(ip, min_step, max_step, grid)
     end
+
+    list = [step, people_counts[1], people_counts[2], people_counts[3]]
+    push!(df, list)
 end
 
 CSV.write("./output.csv", df)
