@@ -23,4 +23,6 @@ All application settings are stored in the config.ini file and are described bel
 - chance_of_dying: The % chance that an infected person will die some time after becoming infected.
 - min_death_steps: The minimum number of iterations before an infected person dies.
 - max_death_steps: The maximum number of iterations before an infected person dies.
-
+- width: The width of the world grid.
+- height: The height of the world grid.
+- iterations: The number of iterations to execute.
