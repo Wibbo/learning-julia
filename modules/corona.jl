@@ -2,6 +2,7 @@
 module corona
 export Status
 export Direction
+export move_person
 
 # All living entities are a Creature.
 abstract type Creature end

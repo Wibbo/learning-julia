@@ -1,11 +1,17 @@
 using Pkg
 pkg"activate ."
 
-include("corona.jl")
+include("modules/corona.jl")
+using .corona
+
+include("modules/helper.jl")
+using .helper
+
 using ConfParser
 using DataFrames
 using CSV
 
+# Read settings from the ini file.
 conf = ConfParse("config.ini")
 parse_conf!(conf)
 
@@ -25,10 +31,6 @@ iterations = parse(Int, retrieve(conf, "WORLD", "iterations"))
 chance_of_dying = parse(Int, retrieve(conf, "PEOPLE", "chance_of_dying"))
 min_death_steps = parse(Int, retrieve(conf, "PEOPLE", "min_death_steps"))
 max_death_steps = parse(Int, retrieve(conf, "PEOPLE", "max_death_steps"))
-
-# Create the world and people arrays.
-grid = corona.Grid_Area(0, 0, world_width, world_height)
-people = Array{corona.Person}(undef, total_people)
 
 """
 Create a person.
@@ -68,11 +70,18 @@ function create_people(status::corona.Status, start::Int, stop::Int)
     end
 end
 
+# Create the world and people arrays.
+grid = corona.Grid_Area(0, 0, world_width, world_height)
+people = Array{corona.Person}(undef, total_people)
+
 # Create the initial healthy, infected and immune people and store them in
 # a people vector for subsequent processing.
 create_people(corona.Healthy, 1,healthy_people)
 create_people(corona.Infected, healthy_people + 1,infected_people + healthy_people)
 create_people(corona.Immune, healthy_people + infected_people+ 1,total_people)
+
+
+
 
 people_counts = [0::Int, 0::Int, 0::Int, 0::Int]
 
@@ -146,12 +155,14 @@ df = DataFrame(Step = Int[], Healthy = Int[],
 
 inf_step = 0
 
-# This is the main application loop. The outer loop is the number of
-# iterations that are executed. Or, in other words, how many moves
-# each person makes in their digital world.
+# This is the main application loop. The outer loop
+# is the number of iterations that are executed. Or,
+# in other words, how many moves each person makes
+# in their digital world.
 for step in 1:iterations
     reset_array(people_counts)
-    # Analyse the grid to see which healthy people are too close to infected ones.
+    # Analyse the grid to see which healthy
+    # people are too close to infected ones.
     for ip in people
         update_people_counts!(ip)
 
@@ -166,7 +177,6 @@ for step in 1:iterations
                 end
             end
         end
-
 
         corona.move_person(ip, min_step, max_step, grid)
     end
