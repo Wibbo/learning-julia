@@ -29,12 +29,6 @@ struct Creature_Area
     x::Int
     y::Int
     r::Int
-    #top::Int
-    #left::Int
-    #bottom::Int
-    #right::Int
-
-    #Creature_Area(p::Position, r::Int) = new(p.y+r, p.x, p.y, p.x+r)
 end
 
 """

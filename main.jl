@@ -1,9 +1,10 @@
+using Pkg
+pkg"activate ."
+
 include("corona.jl")
 using ConfParser
 using DataFrames
 using CSV
-
-
 
 conf = ConfParse("config.ini")
 parse_conf!(conf)
@@ -29,99 +30,49 @@ max_death_steps = parse(Int, retrieve(conf, "PEOPLE", "max_death_steps"))
 grid = corona.Grid_Area(0, 0, world_width, world_height)
 people = Array{corona.Person}(undef, total_people)
 
-#=
-function get_direction(d::corona.Direction)
-    if d == corona.North
-        "North"
-    elseif d == corona.East
-        "East"
-    elseif d == corona.South
-        "South"
-    elseif d == corona.West
-        "West"
-    else
-        throw(InvalidStateException("Invalid direction for movement."))
-    end
-end
-=#
-
 """
-Creates a person.
+Create a person.
 name: The person's name.
-area: A square area around a person that defines when it is possible for them to become infected.
-status: The person's status which can be Healthy, Infected or Immune.
 """
-function create_person(;name::String,
-                        status::corona.Status,
-                        infection_chance::Int,
-                        chance_of_death::Int,
-                        death_step::Int,
-                        infected_step::Int)
+function create_person(;name::String, status::corona.Status,
+                       infection_chance::Int, chance_of_death::Int,
+                       death_step::Int, infected_step::Int)
 
     radius::Int = 0
 
-    if status == corona.Healthy
-        radius = healthy_radius
-    else
-        radius = infected_radius
-    end
+    # Set the area of risk around each person.
+    status==corona.Infected ? radius=infected_radius : radius = healthy_radius
 
     pos = corona.Position(rand(0:world_width), rand(0:world_height), radius)
     dir = rand(0:3)
     direction::corona.Direction = corona.Direction(dir)
-    return corona.Person(name,
-                         pos,
-                         status,
-                         infection_chance,
-                         direction,
-                         chance_of_death,
-                         death_step,
-                         infected_step)
+    return corona.Person(name, pos, status, infection_chance, direction,
+                         chance_of_death, death_step, infected_step)
 end
 
-# Create the required number of healthy people.
-for i in 1:healthy_people
-    death_range = rand(min_death_steps:max_death_steps)
+"""
+Creates a group of people with the specified status and stores them
+in the people vector. This call delegates to the create_person function.
+"""
+function create_people(status::corona.Status, start::Int, stop::Int)
 
-    p = create_person(name="Person $i",
-                      status=corona.Healthy,
-                      infection_chance=probability,
-                      chance_of_death=chance_of_dying,
-                      death_step=death_range,
-                      infected_step=0)
+    for i in start:stop
+        death_range = rand(min_death_steps:max_death_steps)
 
-    people[i] = p
+        p = create_person(name="Person $i", status=status,
+                          infection_chance=probability,
+                          chance_of_death=chance_of_dying,
+                          death_step=death_range,
+                          infected_step=0)
+        people[i] = p
+    end
 end
 
-# Create the required number of infected people.
-for i in healthy_people + 1:infected_people + healthy_people
-
-    death_range = rand(min_death_steps:max_death_steps)
-
-    p = create_person(name="Person $i",
-                      status=corona.Infected,
-                      infection_chance=probability,
-                      chance_of_death=chance_of_dying,
-                      death_step=death_range,
-                      infected_step=0)
-
-    people[i] = p
-end
-
-# Create the required number of immune people.
-for i in healthy_people + infected_people+ 1:total_people
-
-    death_range = rand(min_death_steps:max_death_steps)
-
-    p = create_person(name="Person $i",
-                      status=corona.Immune,
-                      infection_chance=probability,
-                      chance_of_death=chance_of_dying,
-                      death_step=death_range,
-                      infected_step=0)
-
-    people[i] = p
-end
+# Create the initial healthy, infected and immune people and store them in
+# a people vector for subsequent processing.
+create_people(corona.Healthy, 1,healthy_people)
+create_people(corona.Infected, healthy_people + 1,infected_people + healthy_people)
+create_people(corona.Immune, healthy_people + infected_people+ 1,total_people)
 
 people_counts = [0::Int, 0::Int, 0::Int, 0::Int]
 
@@ -187,6 +138,7 @@ function report_status!()
     println("Total healthy is $(people_counts[1])")
     println("Total infected is $(people_counts[2])")
     println("Total immune is $(people_counts[3])")
+    println("Total dead is $(people_counts[4])")
 end
 
 df = DataFrame(Step = Int[], Healthy = Int[],
@@ -208,9 +160,13 @@ for step in 1:iterations
             infect_person!(ip, step)
 
             if step > (ip.infected_step + ip.death_step)
-                ip.status = corona.Dead
+                dead = rand(1:100)
+                if dead < ip.chance_of_death
+                    ip.status = corona.Dead
+                end
             end
         end
+
 
         corona.move_person(ip, min_step, max_step, grid)
     end
